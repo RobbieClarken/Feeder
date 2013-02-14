@@ -12,6 +12,9 @@ from datetime import datetime
 class Element(ET.Element):
     """Base class of all elements which are added to the feed."""
     def __init__(self, *args, **kwargs):
+        for kw, kwval in kwargs.items():
+            if kwval is None:
+                del(kwargs[kw])
         super(Element, self).__init__(*args, **kwargs)
         self.subelement_names = []
     def tostring(self):
@@ -59,6 +62,8 @@ class Author(Person):
         super(Author, self).__init__('author', name, email, uri, **kwargs)
 
 class Contributor(Person):
+    """Creates a <contributor> element.
+       See Person class for more information."""
     def __init__(self, name, email=None, uri=None, **kwargs):
         super(Contributor, self).__init__('contributor', name, email,
                                           uri, **kwargs)
@@ -90,6 +95,17 @@ class Link(Element):
     """
     def __init__(self, href, **kwargs):
         super(Link, self).__init__('link', href=href, **kwargs)
+
+class Category(Element):
+    """<category> has one required attribute, term, and two optional
+       attributes, scheme and label.
+       * term identifies the category
+       * scheme identifies the categorization scheme via a URI.
+       * label provides a human-readable label for display
+    """
+    def __init__(self, term, scheme=None, label=None):
+        super(Category, self).__init__('category', term=term,
+                                       scheme=scheme, label=label)
 
 class Feed(Element):
     """Generates an Atom feed based on the specification described at
