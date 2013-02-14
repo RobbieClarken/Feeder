@@ -107,6 +107,97 @@ class Category(Element):
         super(Category, self).__init__('category', term=term,
                                        scheme=scheme, label=label)
 
+class Entry(Element):
+    """Generates an entry element to be added to the elements array
+       in the Feed class.
+       Required elements:
+       * id: Identifies the entry using a universally unique and
+         permanent URI. Two entries in a feed can have the same value
+         for id if they represent the same entry at different points
+         in time.
+       * title: Contains a human readable title for the entry. This
+         value should not be blank.
+       * updated: Indicates the last time the entry was modified in a
+         significant way. This value need not change after a typo is
+         fixed, only after a substantial modification. Generally,
+         different entries in a feed will have different updated
+         timestamps.
+       Recommended elements:
+       * author: Names one author of the entry. An entry may have
+         multiple authors. An entry must contain at least one author
+         element unless there is an author element in the enclosing
+         feed, or there is an author element in the enclosed source
+         element. See Author class.
+       * content: Contains or links to the complete content of the
+         entry. Content must be provided if there is no alternate link,
+         and should be provided if there is no summary.
+       * link: Identifies a related Web page. The type of relation is
+         defined by the rel attribute. An entry is limited to one
+         alternate per type and hreflang. An entry must contain an
+         alternate link if there is no content element. See Link class.
+       Optional elements:
+       * summary: Conveys a short summary, abstract, or excerpt of the
+         entry. Summary should be provided if there either is no content
+         provided for the entry, or that content is not inline (i.e.,
+         contains a src attribute), or if the content is encoded in
+         base64.
+       * category: Specifies a category that the entry belongs to. A
+         entry may have multiple category elements. See Category class.
+       * contributor: Names one contributor to the entry. An entry may
+         have multiple contributor elements. See Contributor class.
+       * published: Contains the time of the initial creation or first
+         availability of the entry.
+       * source: If an entry is copied from one feed into another feed,
+         then the source feed's metadata (all child elements of feed
+         other than the entry elements) should be preserved if the
+         source feed contains any of the child elements author,
+         contributor, rights, or category and those child elements are
+         not present in the source entry.
+       * rights: Conveys information about rights, e.g. copyrights, held
+         in and over the entry.
+    """
+    def __init__(self, id, title, updated, authors=[], content=None,
+                 links=[], summary=None, categories=[], contributors=[],
+                 published=None, source=None, rights=None):
+        super(Entry, self).__init__('entry')
+        self.subelement_names = [
+            'id',
+            'title',
+            'updated',
+            'authors',
+            'content',
+            'link',
+            'summary',
+            'categories',
+            'contributors',
+            'published',
+            'source',
+            'rights'
+        ]
+        self.id = Element('id')
+        self.id.text = id
+        self.title = Element('title')
+        self.title.text = title
+        self.updated = Element('updated')
+        self.updated.text = updated.isoformat()
+        self.authors = authors
+        if content:
+            self.content = Element('content')
+            self.content.text = content
+        self.links = links
+        if summary:
+            self.summary = Element('summary')
+            self.summary.text = summary
+        self.categories = categories
+        self.contributors = contributors
+        if published is not None:
+            self.published = Element('published')
+            self.published.text = published.isoformat()
+        self.source = source # Should be an Entry
+        if rights:
+            self.rights = Element('rights')
+            self.rights.text = rights
+
 class Feed(Element):
     """Generates an Atom feed based on the specification described at
        http://www.atomenabled.org/developers/syndication/
@@ -132,7 +223,7 @@ class Feed(Element):
        Optional elements:
        * category: Specifies a category that the feed belongs to. A
          feed may have multiple category elements. See Category class.
-       * contributo: Names one contributor to the feed. An feed may
+       * contributor: Names one contributor to the feed. An feed may
          have multiple contributor elements.
        * generator: Identifies the software used to generate the feed,
          for debugging and other purposes. Both the uri and version
@@ -149,7 +240,7 @@ class Feed(Element):
     """
     def __init__(self, id, title, updated=None, authors=[], links=[],
                  categories=[], contributors=[], generator=None,
-                 icon=None, logo=None, rights=None, subtitle=None):
+                 icon=None, logo=None, rights=None, subtitle=None, entries=[]):
         #TODO: kwargs to be appended to super initialisation
         super(Feed, self).__init__('feed',
                                    {'xlmns': 'http://www.w3.org/2005/Atom'})
@@ -167,7 +258,8 @@ class Feed(Element):
             'icon',
             'logo',
             'rights',
-            'subtitle'
+            'subtitle',
+            'entries'
         ]
         # Required
         self.id = Element('id')
@@ -182,9 +274,20 @@ class Feed(Element):
         # Optional
         self.categories = categories
         self.contributors = contributors # List of Category objects
-        self.generator = generator
-        self.icon = icon
-        self.logo = logo
-        self.rights = rights
-        self.subtitle = subtitle
+        if generator:
+            self.generator = Element('generator')
+            self.generator.text = generator
+        if icon:
+            self.icon = Element('icon')
+            self.icon.text = icon
+        if logo:
+            self.logo = Element('logo')
+            self.logo.text = logo
+        if rights:
+            self.rights = Element('rights')
+            self.rights.text = rights
+        if subtitle:
+            self.subtitle = Element('subtitle')
+            self.subtitle.text = subtitle
+        self.entries = entries
 
