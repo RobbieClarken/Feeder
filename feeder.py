@@ -9,6 +9,9 @@ from xml.dom import minidom
 import copy
 from datetime import datetime
 
+def datetime_to_RFC3339(dt):
+    return dt.isoformat() + 'Z'
+
 class Element(ET.Element):
     """Base class of all elements which are added to the feed."""
     def __init__(self, *args, **kwargs):
@@ -179,7 +182,7 @@ class Entry(Element):
         self.title = Element('title')
         self.title.text = title
         self.updated = Element('updated')
-        self.updated.text = updated.isoformat()
+        self.updated.text = datetime_to_RFC3339(updated)
         self.authors = authors
         if content:
             self.content = Element('content')
@@ -192,7 +195,7 @@ class Entry(Element):
         self.contributors = contributors
         if published is not None:
             self.published = Element('published')
-            self.published.text = published.isoformat()
+            self.published.text = datetime_to_RFC3339(published)
         self.source = source # Should be an Entry
         if rights:
             self.rights = Element('rights')
@@ -243,7 +246,7 @@ class Feed(Element):
                  icon=None, logo=None, rights=None, subtitle=None, entries=[]):
         #TODO: kwargs to be appended to super initialisation
         super(Feed, self).__init__('feed',
-                                   {'xlmns': 'http://www.w3.org/2005/Atom'})
+                                   {'xmlns': 'http://www.w3.org/2005/Atom'})
         if updated is None:
             updated = datetime.now()
         self.subelement_names = [
@@ -267,7 +270,7 @@ class Feed(Element):
         self.title = Element('title')
         self.title.text = title
         self.updated = Element('updated')
-        self.updated.text = updated.isoformat()
+        self.updated.text = datetime_to_RFC3339(updated)
         # Recommended
         self.authors = authors
         self.links = links
