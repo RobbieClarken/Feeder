@@ -80,8 +80,8 @@ class Person(Element):
     * uri: contains a home page for the person.
     * email: contains an email address for the person.
     """
-    def __init__(self, tag, name, email=None, uri=None, **kwargs):
-        super(Person, self).__init__(tag, **kwargs)
+    def __init__(self, tag, name, email=None, uri=None):
+        super(Person, self).__init__(tag)
         self.subelement_names = ['name', 'email', 'uri']
         # Required
         self.name = Element('name')
@@ -97,13 +97,13 @@ class Person(Element):
 class Author(Person):
     """Creates a <author> element.
        See Person class for more information."""
-    def __init__(self, name, email=None, uri=None, **kwargs):
-        super(Author, self).__init__('author', name, email, uri, **kwargs)
+    def __init__(self, name, email=None, uri=None):
+        super(Author, self).__init__('author', name, email, uri)
 
 class Contributor(Person):
     """Creates a <contributor> element.
        See Person class for more information."""
-    def __init__(self, name, email=None, uri=None, **kwargs):
+    def __init__(self, name, email=None, uri=None):
         super(Contributor, self).__init__('contributor', name, email,
                                           uri, **kwargs)
 
@@ -132,8 +132,11 @@ class Link(Element):
          display purposes.
        * length the length of the resource, in bytes.
     """
-    def __init__(self, href, **kwargs):
-        super(Link, self).__init__('link', href=href, **kwargs)
+    def __init__(self, href, rel=None,
+                 hreflang=None, title=None, length=None):
+        super(Link, self).__init__('link', href=href,
+                                   rel=rel, hreflang=hreflang,
+                                   title=title, length=length)
 
 class Category(Element):
     """<category> has one required attribute, term, and two optional
@@ -304,10 +307,10 @@ class Feed(Element):
     """
     def __init__(self, id, title, updated=None, authors=[], links=[],
                  categories=[], contributors=[], generator=None,
-                 icon=None, logo=None, rights=None, subtitle=None, entries=[]):
-        #TODO: kwargs to be appended to super initialisation
-        super(Feed, self).__init__('feed',
-                                   {'xmlns': 'http://www.w3.org/2005/Atom'})
+                 icon=None, logo=None, rights=None, subtitle=None, entries=[], **kwargs):
+        if 'xmlns' not in kwargs:
+            kwargs['xmlns'] = 'http://www.w3.org/2005/Atom'
+        super(Feed, self).__init__('feed', **kwargs)
         if updated is None:
             updated = datetime.now()
         self.subelement_names = [
