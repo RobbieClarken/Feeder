@@ -1,6 +1,7 @@
 from xml.etree import ElementTree as ET
 from xml.dom import minidom
 import copy
+from datetime import datetime
 
 class Element(ET.Element):
     def __init__(self, *args, **kwargs):
@@ -43,9 +44,44 @@ class Author(Person):
     def __init__(self, name, email=None, uri=None, **kwargs):
         super(Author, self).__init__('author', name, email, uri, **kwargs)
 
+class Contributor(Person):
+    def __init__(self, name, email=None, uri=None, **kwargs):
+        super(Contributor, self).__init__('contributor', name, email, uri, **kwargs)
+
+class Link(Element):
+    """<link> is patterned after html's link element. It has one
+       required attribute, href, and five optional attributes: rel,
+       type, hreflang, title, and length.
+       * href is the URI of the referenced resource (typically a Web
+         page)
+       * rel contains a single link relationship type. It can be a full
+         URI (see extensibility), or one of the following predefined
+         values (default=alternate):
+         - alternate: an alternate representation of the entry or feed,
+           for example a permalink to the html version of the entry, or
+           the front page of the weblog.
+         - enclosure: a related resource which is potentially large in
+           size and might require special handling, for example an audio
+           or video recording.
+         - related: an document related to the entry or feed.
+         - self: the feed itself.
+         - via: the source of the information provided in the
+           entry.
+         - type indicates the media type of the resource.
+       * hreflang indicates the language of the referenced resource.
+       * title human readable information about the link, typically for
+         display purposes.
+       * length the length of the resource, in bytes.
+    """
+    def __init__(self, href, **kwargs):
+        super(Link, self).__init__('link', href=href, **kwargs)
+
 class Feed(Element):
     def __init__(self, id, title, updated=None):
+        #TODO: kwargs to be appended to super initialisation
         super(Feed, self).__init__('feed', {'xlmns': 'http://www.w3.org/2005/Atom'})
+        if updated is None:
+            updated = datetime.now()
         self.subelement_names = [
             'id',
             'title',
@@ -78,3 +114,4 @@ class Feed(Element):
         self.logo = None
         self.rights = None
         self.subtitle = None
+
