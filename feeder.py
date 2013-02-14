@@ -62,7 +62,7 @@ class Element(ET.Element):
 
 
 class ElementList(list):
-    """A list of elements. Intended for subclassing for overwriting tree method."""
+    """A list of elements. Intended for subclassing to overwrite tree method."""
     def __init__(self, values=[]):
         super(ElementList, self).__init__()
         for value in values:
@@ -75,7 +75,10 @@ class ElementList(list):
         return [el.tree() for el in self]
 
 class Person(Element):
-    """<author> and <contributor> describe a person, corporation, or similar entity. It has one required element, name, and two optional elements: uri, email.
+    """
+    <author> and <contributor> describe a person, corporation, or
+    similar entity. It has one required element, name, and two optional
+    elements: uri, email.
     * name: conveys a human-readable name for the person.
     * uri: contains a home page for the person.
     * email: contains an email address for the person.
@@ -95,42 +98,41 @@ class Person(Element):
             self.uri.text = uri
 
 class Author(Person):
-    """Creates a <author> element.
-       See Person class for more information."""
+    """Creates a <author> element. See Person class for more information."""
     def __init__(self, name, email=None, uri=None):
         super(Author, self).__init__('author', name, email, uri)
 
 class Contributor(Person):
-    """Creates a <contributor> element.
-       See Person class for more information."""
+    """Creates a <contributor> element. See Person class for more information."""
     def __init__(self, name, email=None, uri=None):
         super(Contributor, self).__init__('contributor', name, email,
                                           uri, **kwargs)
 
 class Link(Element):
-    """<link> is patterned after html's link element. It has one
-       required attribute, href, and five optional attributes: rel,
-       type, hreflang, title, and length.
-       * href is the URI of the referenced resource (typically a Web
-         page)
-       * rel contains a single link relationship type. It can be a full
-         URI (see extensibility), or one of the following predefined
-         values (default=alternate):
-         - alternate: an alternate representation of the entry or feed,
-           for example a permalink to the html version of the entry, or
-           the front page of the weblog.
-         - enclosure: a related resource which is potentially large in
-           size and might require special handling, for example an audio
-           or video recording.
-         - related: an document related to the entry or feed.
-         - self: the feed itself.
-         - via: the source of the information provided in the
-           entry.
-         - type indicates the media type of the resource.
-       * hreflang indicates the language of the referenced resource.
-       * title human readable information about the link, typically for
-         display purposes.
-       * length the length of the resource, in bytes.
+    """
+    <link> is patterned after html's link element. It has one
+    required attribute, href, and five optional attributes: rel,
+    type, hreflang, title, and length.
+    * href is the URI of the referenced resource (typically a Web
+        page)
+    * rel contains a single link relationship type. It can be a full
+        URI (see extensibility), or one of the following predefined
+        values (default=alternate):
+        - alternate: an alternate representation of the entry or feed,
+        for example a permalink to the html version of the entry, or
+        the front page of the weblog.
+        - enclosure: a related resource which is potentially large in
+        size and might require special handling, for example an audio
+        or video recording.
+        - related: an document related to the entry or feed.
+        - self: the feed itself.
+        - via: the source of the information provided in the
+        entry.
+        - type indicates the media type of the resource.
+    * hreflang indicates the language of the referenced resource.
+    * title human readable information about the link, typically for
+        display purposes.
+    * length the length of the resource, in bytes.
     """
     def __init__(self, href, rel=None,
                  hreflang=None, title=None, length=None):
@@ -139,17 +141,31 @@ class Link(Element):
                                    title=title, length=length)
 
 class Category(Element):
-    """<category> has one required attribute, term, and two optional
-       attributes, scheme and label.
-       * term identifies the category
-       * scheme identifies the categorization scheme via a URI.
-       * label provides a human-readable label for display
+    """
+    <category> has one required attribute, term, and two optional
+    attributes, scheme and label.
+    * term identifies the category
+    * scheme identifies the categorization scheme via a URI.
+    * label provides a human-readable label for display
     """
     def __init__(self, term, scheme=None, label=None):
         super(Category, self).__init__('category', term=term,
                                        scheme=scheme, label=label)
 
 class Chapter(Element):
+    """
+    Podcast chapters as described at http://podlove.org/simple-chapters/
+    Required:
+    * start: Refers to a single point in time relative to the beginning
+      of the media file.
+    * title: Defines name to be the title of the chapter.
+    Optional:
+    * href: This is an additional hypertext reference as an extension of
+      the title that refers to a resource that provides related
+      information.
+    * image: This is an URL pointing to an image to be associated with
+      the chapter.
+    """
     def __init__(self, start, title, href=None, image=None):
         if isinstance(start, timedelta):
             start = timedelta_to_str(start)
@@ -158,6 +174,7 @@ class Chapter(Element):
                                       image=image)
 
 class ChapterList(ElementList):
+    """Chapters should be encapsulated in this class."""
     def __init__(self, values=[]):
         super(ChapterList, self).__init__(values)
 
@@ -356,5 +373,5 @@ class Feed(Element):
         if subtitle:
             self.subtitle = Element('subtitle')
             self.subtitle.text = subtitle
-        self.entries = ElementList(entries)
+        self.entries = entries
 
