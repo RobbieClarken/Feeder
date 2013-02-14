@@ -7,10 +7,22 @@ http://www.atomenabled.org/developers/syndication/
 from xml.etree import ElementTree as ET
 from xml.dom import minidom
 import copy
-from datetime import datetime
+from datetime import datetime, timedelta
 
 def datetime_to_RFC3339(dt):
     return dt.isoformat() + 'Z'
+
+def timedelta_to_str(td):
+    microseconds_per_millisecond = 1000
+    seconds_per_minute = 60
+    minutes_per_hour = 60
+    seconds_per_hour = seconds_per_minute * minutes_per_hour
+    hours_per_day = 24
+    hours = int(td.seconds / seconds_per_hour) + hours_per_day * td.days
+    minutes = int(td.seconds / seconds_per_minute) % minutes_per_hour
+    seconds = td.seconds % seconds_per_minute
+    milliseconds = int(td.microseconds / microseconds_per_millisecond)
+    return '%02i:%02i:%02i.%03i' % (hours, minutes, seconds, milliseconds)
 
 class Element(ET.Element):
     """Base class of all elements which are added to the feed."""
@@ -30,13 +42,30 @@ class Element(ET.Element):
             if subelement_name in dir(self):
                 subelement = self.__getattribute__(subelement_name)
                 if subelement is None:
-                    break
-                if isinstance(subelement, list):
+                    continue
+                if isinstance(subelement, ElementList):
+                    el.extend(subelement.tree())
+                elif isinstance(subelement, list):
                     for subelement_item in subelement:
+                        if subelement_item is None:
+                            continue
                         el.extend([subelement_item.tree()])
                 else:
                     el.extend([subelement.tree()])
         return el
+
+class ElementList(list):
+    """A list of elements. Intended for subclassing for overwriting tree method."""
+    def __init__(self, values=[]):
+        super(ElementList, self).__init__()
+        for value in values:
+            self.append(value)
+
+    def tree(self):
+        return self.tree_elements()
+
+    def tree_elements(self):
+        return [el.tree() for el in self]
 
 class Person(Element):
     """<author> and <contributor> describe a person, corporation, or similar entity. It has one required element, name, and two optional elements: uri, email.
@@ -110,6 +139,27 @@ class Category(Element):
         super(Category, self).__init__('category', term=term,
                                        scheme=scheme, label=label)
 
+class Chapter(Element):
+    def __init__(self, start, title, href=None, image=None):
+        if isinstance(start, timedelta):
+            start = timedelta_to_str(start)
+        super(Chapter, self).__init__('psc:chapter', start=start,
+                                      title=title, href=href,
+                                      image=image)
+
+class ChapterList(ElementList):
+    def __init__(self, values=[]):
+        super(ChapterList, self).__init__(values)
+
+    def tree(self):
+        if len(self) == 0:
+            return []
+        el = Element('psc:chapters', version="1.1")
+        el.set('xmlns:psc', 'http://podlove.org/simple-chapters')
+        el.extend(self.tree_elements())
+        return [ el ]
+
+
 class Entry(Element):
     """Generates an entry element to be added to the elements array
        in the Feed class.
@@ -158,10 +208,12 @@ class Entry(Element):
          not present in the source entry.
        * rights: Conveys information about rights, e.g. copyrights, held
          in and over the entry.
+       * chapters: Podcast chapters as described at
+         http://podlove.org/simple-chapters/. See Chapter class.
     """
     def __init__(self, id, title, updated, authors=[], content=None,
                  links=[], summary=None, categories=[], contributors=[],
-                 published=None, source=None, rights=None):
+                 published=None, source=None, rights=None, chapters=[]):
         super(Entry, self).__init__('entry')
         self.subelement_names = [
             'id',
@@ -175,7 +227,8 @@ class Entry(Element):
             'contributors',
             'published',
             'source',
-            'rights'
+            'rights',
+            'chapters'
         ]
         self.id = Element('id')
         self.id.text = id
@@ -200,6 +253,7 @@ class Entry(Element):
         if rights:
             self.rights = Element('rights')
             self.rights.text = rights
+        self.chapters = ChapterList(chapters)
 
 class Feed(Element):
     """Generates an Atom feed based on the specification described at
@@ -292,5 +346,5 @@ class Feed(Element):
         if subtitle:
             self.subtitle = Element('subtitle')
             self.subtitle.text = subtitle
-        self.entries = entries
+        self.entries = ElementList(entries)
 
