@@ -1,9 +1,16 @@
+"""
+Feeder is a Python library for generating Atom feeds for podcasts.
+Uses the specification described at
+http://www.atomenabled.org/developers/syndication/
+"""
+
 from xml.etree import ElementTree as ET
 from xml.dom import minidom
 import copy
 from datetime import datetime
 
 class Element(ET.Element):
+    """Base class of all elements which are added to the feed."""
     def __init__(self, *args, **kwargs):
         super(Element, self).__init__(*args, **kwargs)
         self.subelement_names = []
@@ -26,6 +33,11 @@ class Element(ET.Element):
         return el
 
 class Person(Element):
+    """<author> and <contributor> describe a person, corporation, or similar entity. It has one required element, name, and two optional elements: uri, email.
+    * name: conveys a human-readable name for the person.
+    * uri: contains a home page for the person.
+    * email: contains an email address for the person.
+    """
     def __init__(self, tag, name, email=None, uri=None, **kwargs):
         super(Person, self).__init__(tag, **kwargs)
         self.subelement_names = ['name', 'email', 'uri']
@@ -41,12 +53,15 @@ class Person(Element):
             self.uri.text = uri
 
 class Author(Person):
+    """Creates a <author> element.
+       See Person class for more information."""
     def __init__(self, name, email=None, uri=None, **kwargs):
         super(Author, self).__init__('author', name, email, uri, **kwargs)
 
 class Contributor(Person):
     def __init__(self, name, email=None, uri=None, **kwargs):
-        super(Contributor, self).__init__('contributor', name, email, uri, **kwargs)
+        super(Contributor, self).__init__('contributor', name, email,
+                                          uri, **kwargs)
 
 class Link(Element):
     """<link> is patterned after html's link element. It has one
@@ -77,9 +92,13 @@ class Link(Element):
         super(Link, self).__init__('link', href=href, **kwargs)
 
 class Feed(Element):
+    """Generates an Atom feed based on the specification described at
+       http://www.atomenabled.org/developers/syndication/
+    """
     def __init__(self, id, title, updated=None):
         #TODO: kwargs to be appended to super initialisation
-        super(Feed, self).__init__('feed', {'xlmns': 'http://www.w3.org/2005/Atom'})
+        super(Feed, self).__init__('feed',
+                                   {'xlmns': 'http://www.w3.org/2005/Atom'})
         if updated is None:
             updated = datetime.now()
         self.subelement_names = [
