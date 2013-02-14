@@ -53,6 +53,13 @@ class Element(ET.Element):
                 else:
                     el.extend([subelement.tree()])
         return el
+    def custom_element(self, tag, content=None, **kwargs):
+        el = Element(tag, **kwargs)
+        if content is not None:
+            el.text = content
+        self.__setattr__(tag, el)
+        self.subelement_names.append(tag)
+
 
 class ElementList(list):
     """A list of elements. Intended for subclassing for overwriting tree method."""
