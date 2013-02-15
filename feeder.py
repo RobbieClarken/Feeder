@@ -45,7 +45,7 @@ class Element(ET.Element):
                 del(kwargs[kw])
         super(Element, self).__init__(*args, **kwargs)
         self.subelement_names = []
-    def tostring(self, pretty=True):
+    def tostring(self, pretty=False):
         rough_string = ET.tostring(self.tree(), 'utf-8')
         if not pretty:
             return '<?xml version="1.0" encoding="utf-8"?>' + rough_string
@@ -205,7 +205,7 @@ class ChapterList(ElementList):
 class Entry(Element):
     """Generates an entry element to be added to the elements array
        in the Feed class.
-       Required elements:
+       Required:
        * id: Identifies the entry using a universally unique and
          permanent URI. Two entries in a feed can have the same value
          for id if they represent the same entry at different points
@@ -217,7 +217,7 @@ class Entry(Element):
          fixed, only after a substantial modification. Generally,
          different entries in a feed will have different updated
          timestamps.
-       Recommended elements:
+       Recommended:
        * author: Names one author of the entry. An entry may have
          multiple authors. An entry must contain at least one author
          element unless there is an author element in the enclosing
@@ -230,12 +230,12 @@ class Entry(Element):
          defined by the rel attribute. An entry is limited to one
          alternate per type and hreflang. An entry must contain an
          alternate link if there is no content element. See Link class.
-       Optional elements:
        * summary: Conveys a short summary, abstract, or excerpt of the
          entry. Summary should be provided if there either is no content
          provided for the entry, or that content is not inline (i.e.,
          contains a src attribute), or if the content is encoded in
          base64.
+       Optional:
        * category: Specifies a category that the entry belongs to. A
          entry may have multiple category elements. See Category class.
        * contributor: Names one contributor to the entry. An entry may
