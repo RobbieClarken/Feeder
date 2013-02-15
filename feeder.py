@@ -145,13 +145,15 @@ class Link(Element):
         - self: the feed itself.
         - via: the source of the information provided in the entry.
         - type indicates the media type of the resource.
+    * type: the media type of the resource.
     * hreflang: the language of the referenced resource.
     * title: human readable information about the link, typically for
         display purposes.
     * length: the length of the resource, in bytes.
     """
-    def __init__(self, href, rel=None, hreflang=None, title=None, length=None):
-        super(Link, self).__init__('link', href=href, rel=rel,
+    def __init__(self, href, rel=None, type=None, hreflang=None,
+                 title=None, length=None):
+        super(Link, self).__init__('link', href=href, rel=rel, type=type,
                                    hreflang=hreflang, title=title,
                                    length=length)
 
