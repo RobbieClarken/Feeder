@@ -69,7 +69,7 @@ class Element(ET.Element):
                 else:
                     el.extend([subelement.tree()])
         return el
-    def custom_element(self, tag, content=None, **kwargs):
+    def add_custom_element(self, tag, content=None, **kwargs):
         el = Element(tag, **kwargs)
         if content is not None:
             el.text = content
