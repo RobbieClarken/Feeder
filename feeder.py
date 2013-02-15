@@ -10,22 +10,28 @@ import copy
 from datetime import datetime, timedelta
 from uuid import UUID
 
-def datetime_to_RFC3339(dt):
-    return dt.isoformat() + 'Z'
+def parse_datetime(dt):
+    """Return RFC 3339 compliant datetime."""
+    return dt.isoformat() + 'Z' if hasattr(dt, 'isoformat') else dt
 
-def timedelta_to_str(td):
-    microseconds_per_millisecond = 1000
-    seconds_per_minute = 60
-    minutes_per_hour = 60
-    seconds_per_hour = seconds_per_minute * minutes_per_hour
-    hours_per_day = 24
-    hours = int(td.seconds / seconds_per_hour) + hours_per_day * td.days
-    minutes = int(td.seconds / seconds_per_minute) % minutes_per_hour
-    seconds = td.seconds % seconds_per_minute
-    milliseconds = int(td.microseconds / microseconds_per_millisecond)
-    return '%02i:%02i:%02i.%03i' % (hours, minutes, seconds, milliseconds)
+def parse_timedelta(td):
+    """Return time offset as HH:MM:SS.sss."""
+    if isinstance(td, timedelta):
+        microseconds_per_millisecond = 1000
+        seconds_per_minute = 60
+        minutes_per_hour = 60
+        seconds_per_hour = seconds_per_minute * minutes_per_hour
+        hours_per_day = 24
+        hours = int(td.seconds / seconds_per_hour) + hours_per_day * td.days
+        minutes = int(td.seconds / seconds_per_minute) % minutes_per_hour
+        seconds = td.seconds % seconds_per_minute
+        milliseconds = int(td.microseconds / microseconds_per_millisecond)
+        return '%02i:%02i:%02i.%03i' % (hours, minutes, seconds, milliseconds)
+    else:
+        return td
 
 def parse_id(id):
+    """If id is a UUID, prefix it with "urn:uuid:"."""
     if isinstance(id, UUID):
         return 'urn:uuid:%s' % id
     else:
@@ -174,8 +180,7 @@ class Chapter(Element):
       chapter.
     """
     def __init__(self, start, title, href=None, image=None):
-        if isinstance(start, timedelta):
-            start = timedelta_to_str(start)
+        start = parse_timedelta(start)
         super(Chapter, self).__init__('psc:chapter', start=start,
                                       title=title, href=href,
                                       image=image)
@@ -269,7 +274,7 @@ class Entry(Element):
         self.title = Element('title')
         self.title.text = title
         self.updated = Element('updated')
-        self.updated.text = datetime_to_RFC3339(updated)
+        self.updated.text = parse_datetime(updated)
         self.authors = authors
         if content:
             self.content = Element('content')
@@ -282,7 +287,7 @@ class Entry(Element):
         self.contributors = contributors
         if published is not None:
             self.published = Element('published')
-            self.published.text = datetime_to_RFC3339(published)
+            self.published.text = parse_datetime(published)
         self.source = source # Should be an Entry
         if rights:
             self.rights = Element('rights')
@@ -358,7 +363,7 @@ class Feed(Element):
         self.title = Element('title')
         self.title.text = title
         self.updated = Element('updated')
-        self.updated.text = datetime_to_RFC3339(updated)
+        self.updated.text = parse_datetime(updated)
         # Recommended
         self.authors = authors
         self.links = links
