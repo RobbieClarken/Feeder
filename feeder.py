@@ -45,10 +45,13 @@ class Element(ET.Element):
                 del(kwargs[kw])
         super(Element, self).__init__(*args, **kwargs)
         self.subelement_names = []
-    def tostring(self):
+    def tostring(self, pretty=True):
         rough_string = ET.tostring(self.tree(), 'utf-8')
-        reparsed = minidom.parseString(rough_string)
-        return reparsed.toprettyxml(indent='  ', encoding='utf-8')
+        if not pretty:
+            return '<?xml version="1.0" encoding="utf-8"?>' + rough_string
+        else:
+            reparsed = minidom.parseString(rough_string)
+            return reparsed.toprettyxml(indent='  ', encoding='utf-8')
     def tree(self):
         el = copy.copy(self)
         for subelement_name in self.subelement_names:
