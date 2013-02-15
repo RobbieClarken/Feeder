@@ -8,6 +8,7 @@ from xml.etree import ElementTree as ET
 from xml.dom import minidom
 import copy
 from datetime import datetime, timedelta
+from uuid
 
 def datetime_to_RFC3339(dt):
     return dt.isoformat() + 'Z'
@@ -23,6 +24,12 @@ def timedelta_to_str(td):
     seconds = td.seconds % seconds_per_minute
     milliseconds = int(td.microseconds / microseconds_per_millisecond)
     return '%02i:%02i:%02i.%03i' % (hours, minutes, seconds, milliseconds)
+
+def parse_uuid(id):
+    if isinstance(id, uuid.UUID):
+        return 'urn:uuid:%s' % id
+    else:
+        return id
 
 class Element(ET.Element):
     """Base class of all elements which are added to the feed."""
@@ -110,14 +117,15 @@ class Contributor(Person):
 
 class Link(Element):
     """
-    <link> is patterned after html's link element. It has one
-    required attribute, href, and five optional attributes: rel,
-    type, hreflang, title, and length.
-    * href is the URI of the referenced resource (typically a Web
-        page)
-    * rel contains a single link relationship type. It can be a full
-        URI (see extensibility), or one of the following predefined
-        values (default=alternate):
+    Creates a <link> element to a web page or resource. Has one required
+    attribute, href, and five optional attributes: rel, type, hreflang,
+    title, and length.
+    Required:
+    * href: the URI of the referenced resource (typically a Web page)
+    Optional:
+    * rel: a single link relationship type. It can be a full URI (see
+        extensibility), or one of the following predefined values
+        (default=alternate):
         - alternate: an alternate representation of the entry or feed,
         for example a permalink to the html version of the entry, or
         the front page of the weblog.
@@ -126,27 +134,27 @@ class Link(Element):
         or video recording.
         - related: an document related to the entry or feed.
         - self: the feed itself.
-        - via: the source of the information provided in the
-        entry.
+        - via: the source of the information provided in the entry.
         - type indicates the media type of the resource.
-    * hreflang indicates the language of the referenced resource.
-    * title human readable information about the link, typically for
+    * hreflang: the language of the referenced resource.
+    * title: human readable information about the link, typically for
         display purposes.
-    * length the length of the resource, in bytes.
+    * length: the length of the resource, in bytes.
     """
-    def __init__(self, href, rel=None,
-                 hreflang=None, title=None, length=None):
-        super(Link, self).__init__('link', href=href,
-                                   rel=rel, hreflang=hreflang,
-                                   title=title, length=length)
+    def __init__(self, href, rel=None, hreflang=None, title=None, length=None):
+        super(Link, self).__init__('link', href=href, rel=rel,
+                                   hreflang=hreflang, title=title,
+                                   length=length)
 
 class Category(Element):
     """
-    <category> has one required attribute, term, and two optional
-    attributes, scheme and label.
-    * term identifies the category
-    * scheme identifies the categorization scheme via a URI.
-    * label provides a human-readable label for display
+    Creates a <category> element. Has one required attribute, term, and
+    two optional attributes, scheme and label.
+    Required:
+    * term: identifies the category.
+    Optional:
+    * scheme: identifies the categorization scheme via a URI.
+    * label: provides a human-readable label for display.
     """
     def __init__(self, term, scheme=None, label=None):
         super(Category, self).__init__('category', term=term,
@@ -156,15 +164,14 @@ class Chapter(Element):
     """
     Podcast chapters as described at http://podlove.org/simple-chapters/
     Required:
-    * start: Refers to a single point in time relative to the beginning
-      of the media file.
-    * title: Defines name to be the title of the chapter.
+    * start: a single point in time relative to the beginning of the
+      media file.
+    * title: the name of the chapter.
     Optional:
-    * href: This is an additional hypertext reference as an extension of
-      the title that refers to a resource that provides related
-      information.
-    * image: This is an URL pointing to an image to be associated with
-      the chapter.
+    * href: a hypertext reference as an extension of the title that
+      refers to a resource that provides related information.
+    * image: an URL pointing to an image to be associated with the
+      chapter.
     """
     def __init__(self, start, title, href=None, image=None):
         if isinstance(start, timedelta):
@@ -258,7 +265,7 @@ class Entry(Element):
             'chapters'
         ]
         self.id = Element('id')
-        self.id.text = id
+        self.id.text = parse_id(id)
         self.title = Element('title')
         self.title.text = title
         self.updated = Element('updated')
@@ -347,7 +354,7 @@ class Feed(Element):
         ]
         # Required
         self.id = Element('id')
-        self.id.text = id
+        self.id.text = parse_id(id)
         self.title = Element('title')
         self.title.text = title
         self.updated = Element('updated')
