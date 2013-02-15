@@ -8,7 +8,7 @@ from xml.etree import ElementTree as ET
 from xml.dom import minidom
 import copy
 from datetime import datetime, timedelta
-from uuid
+from uuid import UUID
 
 def datetime_to_RFC3339(dt):
     return dt.isoformat() + 'Z'
@@ -25,8 +25,8 @@ def timedelta_to_str(td):
     milliseconds = int(td.microseconds / microseconds_per_millisecond)
     return '%02i:%02i:%02i.%03i' % (hours, minutes, seconds, milliseconds)
 
-def parse_uuid(id):
-    if isinstance(id, uuid.UUID):
+def parse_id(id):
+    if isinstance(id, UUID):
         return 'urn:uuid:%s' % id
     else:
         return id
