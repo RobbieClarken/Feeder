@@ -1,5 +1,5 @@
 """
-Feeder is a Python library for generating Atom feeds for podcasts.
+A Python library for generating Atom feeds for podcasts.
 Uses the specification described at
 http://www.atomenabled.org/developers/syndication/
 """
