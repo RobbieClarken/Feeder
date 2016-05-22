@@ -86,7 +86,9 @@ class Element(ET.Element):
 
 class ElementList(list):
     """A list of elements. Intended for subclassing to overwrite tree method."""
-    def __init__(self, values=[]):
+    def __init__(self, values=None):
+        if values is None:
+            values = []
         super(ElementList, self).__init__()
         for value in values:
             self.append(value)
@@ -205,7 +207,9 @@ class Chapter(Element):
 
 class ChapterList(ElementList):
     """Chapters should be encapsulated in this class."""
-    def __init__(self, values=[]):
+    def __init__(self, values=None):
+        if values is None:
+            values = []
         super(ChapterList, self).__init__(values)
 
     def tree(self):
@@ -268,9 +272,19 @@ class Entry(Element):
        * chapters: Podcast chapters as described at
          http://podlove.org/simple-chapters/. See Chapter class.
     """
-    def __init__(self, id, title, updated, authors=[], content=None,
-                 links=[], summary=None, categories=[], contributors=[],
-                 published=None, source=None, rights=None, chapters=[]):
+    def __init__(self, id, title, updated, authors=None, content=None,
+                 links=None, summary=None, categories=None, contributors=None,
+                 published=None, source=None, rights=None, chapters=None):
+        if authors is None:
+            authors = []
+        if links is None:
+            links = []
+        if categories is None:
+            categories = []
+        if contributors is None:
+            contributors = []
+        if chapters is None:
+            chapters = []
         super(Entry, self).__init__('entry')
         self.subelement_names = [
             'id',
@@ -353,9 +367,20 @@ class Feed(Element):
        * subtitle: Contains a human-readable description or subtitle for
          the feed.
     """
-    def __init__(self, id, title, updated=None, authors=[], links=[],
-                 categories=[], contributors=[], generator=None,
-                 icon=None, logo=None, rights=None, subtitle=None, entries=[], **kwargs):
+    def __init__(self, id, title, updated=None, authors=None, links=None,
+                 categories=None, contributors=None, generator=None,
+                 icon=None, logo=None, rights=None, subtitle=None, entries=None,
+                 **kwargs):
+        if authors is None:
+            authors = []
+        if links is None:
+            links = []
+        if categories is None:
+            categories = []
+        if contributors is None:
+            contributors = []
+        if entries is None:
+            entries = []
         if 'xmlns' not in kwargs:
             kwargs['xmlns'] = 'http://www.w3.org/2005/Atom'
         super(Feed, self).__init__('feed', **kwargs)
