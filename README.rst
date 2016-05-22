@@ -21,11 +21,11 @@ Usage
     from datetime import datetime
 
     feed = Feed(id='http://example.com',
-                       title='Example Feed',
-                       authors=[Author('Jack Black')],
-                       logo='http://example.com/logo.jpg',
-                       categories=[Category('Technology'),
-                                   Category('Society & Culture')])
+                title='Example Feed',
+                authors=[Author('Jack Black')],
+                logo='http://example.com/logo.jpg',
+                categories=[Category('Technology'),
+                            Category('Society & Culture')])
     feed.set('xml:lang', 'en')
     feed.links = [
       Link('http://example.com/'),

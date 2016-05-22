@@ -10,9 +10,11 @@ import copy
 from datetime import datetime, timedelta
 from uuid import UUID
 
+
 def parse_datetime(dt):
     """Return RFC 3339 compliant datetime."""
     return dt.isoformat() + 'Z' if hasattr(dt, 'isoformat') else dt
+
 
 def parse_timedelta(td):
     """Return time offset as HH:MM:SS.sss."""
@@ -30,12 +32,14 @@ def parse_timedelta(td):
     else:
         return td
 
+
 def parse_id(id):
     """If id is a UUID, prefix it with "urn:uuid:"."""
     if isinstance(id, UUID):
         return 'urn:uuid:%s' % id
     else:
         return id
+
 
 class Element(ET.Element):
     """Base class of all elements which are added to the feed."""
@@ -45,6 +49,7 @@ class Element(ET.Element):
                 del(kwargs[kw])
         super(Element, self).__init__(*args, **kwargs)
         self.subelement_names = []
+
     def tostring(self, pretty=False):
         rough_string = ET.tostring(self.tree(), 'utf-8')
         if not pretty:
@@ -52,6 +57,7 @@ class Element(ET.Element):
         else:
             reparsed = minidom.parseString(rough_string)
             return reparsed.toprettyxml(indent='  ', encoding='utf-8')
+
     def tree(self):
         el = copy.copy(self)
         for subelement_name in self.subelement_names:
@@ -69,6 +75,7 @@ class Element(ET.Element):
                 else:
                     el.extend([subelement.tree()])
         return el
+
     def add_custom_element(self, tag, content=None, **kwargs):
         el = Element(tag, **kwargs)
         if content is not None:
@@ -89,6 +96,7 @@ class ElementList(list):
 
     def tree_elements(self):
         return [el.tree() for el in self]
+
 
 class Person(Element):
     """
@@ -113,16 +121,18 @@ class Person(Element):
             self.uri = Element('uri')
             self.uri.text = uri
 
+
 class Author(Person):
     """Creates a <author> element. See Person class for more information."""
     def __init__(self, name, email=None, uri=None):
         super(Author, self).__init__('author', name, email, uri)
 
+
 class Contributor(Person):
     """Creates a <contributor> element. See Person class for more information."""
     def __init__(self, name, email=None, uri=None):
-        super(Contributor, self).__init__('contributor', name, email,
-                                          uri, **kwargs)
+        super(Contributor, self).__init__('contributor', name, email, uri)
+
 
 class Link(Element):
     """
@@ -157,6 +167,7 @@ class Link(Element):
                                    hreflang=hreflang, title=title,
                                    length=length)
 
+
 class Category(Element):
     """
     Creates a <category> element. Has one required attribute, term, and
@@ -170,6 +181,7 @@ class Category(Element):
     def __init__(self, term, scheme=None, label=None):
         super(Category, self).__init__('category', term=term,
                                        scheme=scheme, label=label)
+
 
 class Chapter(Element):
     """
@@ -190,6 +202,7 @@ class Chapter(Element):
                                       title=title, href=href,
                                       image=image)
 
+
 class ChapterList(ElementList):
     """Chapters should be encapsulated in this class."""
     def __init__(self, values=[]):
@@ -201,7 +214,7 @@ class ChapterList(ElementList):
         el = Element('psc:chapters', version="1.1")
         el.set('xmlns:psc', 'http://podlove.org/simple-chapters')
         el.extend(self.tree_elements())
-        return [ el ]
+        return [el]
 
 
 class Entry(Element):
@@ -293,11 +306,12 @@ class Entry(Element):
         if published is not None:
             self.published = Element('published')
             self.published.text = parse_datetime(published)
-        self.source = source # Should be an Entry
+        self.source = source  # Should be an Entry
         if rights:
             self.rights = Element('rights')
             self.rights.text = rights
         self.chapters = ChapterList(chapters)
+
 
 class Feed(Element):
     """Generates an Atom feed based on the specification described at
@@ -374,7 +388,7 @@ class Feed(Element):
         self.links = links
         # Optional
         self.categories = categories
-        self.contributors = contributors # List of Category objects
+        self.contributors = contributors  # List of Category objects
         if generator:
             self.generator = Element('generator')
             self.generator.text = generator
@@ -391,4 +405,3 @@ class Feed(Element):
             self.subtitle = Element('subtitle')
             self.subtitle.text = subtitle
         self.entries = entries
-
